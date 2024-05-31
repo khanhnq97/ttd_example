@@ -15,7 +15,7 @@ class WeatherEntity extends Equatable {
   final String main;
   final String description;
   final String iconCode;
-  final String temperature;
+  final double temperature;
   final int pressure;
   final int humidity;
 

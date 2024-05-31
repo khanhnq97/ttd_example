@@ -20,7 +20,7 @@ void main() {
     main: 'Clouds',
     description: 'few clouds',
     iconCode: '02d',
-    temperature: '302.28',
+    temperature: 302.28,
     pressure: 1009,
     humidity: 70,
   );
