@@ -12,40 +12,55 @@ void main() {
   late MockHttpClient mockHttpClient;
   late WeatherRemoteDataSourceImpl weatherRemoteDataSourceImpl;
 
-  setUp(() {
+  setUpAll(() {
     mockHttpClient = MockHttpClient();
     weatherRemoteDataSourceImpl = WeatherRemoteDataSourceImpl(mockHttpClient);
   });
 
   const testCityName = 'New York';
+  const String dummyWeatherResponsePath = 'helpers/dummy_data/dummy_weather_response.json';
 
-  group('get current weather', () {
-    test('should return weather model when the response code is 200', () async {
-      //arrange
-      when(mockHttpClient.get(Uri.parse(Urls.currentWeatherByName(testCityName))))
-          .thenAnswer((_) async => http.Response(readJson('helpers/dummy_data/dummy_weather_response.json'), 200));
+  final request = Uri.parse(Urls.currentWeatherByName(testCityName));
 
-      //act
+  test('should return weather model when the response code is 200', () async {
+    //arrange
+    when(
+      mockHttpClient.get(request),
+    ).thenAnswer(
+      (_) async => http.Response(readJson(dummyWeatherResponsePath), 200),
+    );
+
+    //act
+    try {
       final result = await weatherRemoteDataSourceImpl.getCurrentWeather(testCityName);
 
       //assert
       expect(result, isA<WeatherModel>());
-    });
-
-    test(
-      'should throw a server exception when the response code is 404 or other',
-      () async {
-        //arrange
-        when(
-          mockHttpClient.get(Uri.parse(Urls.currentWeatherByName(testCityName))),
-        ).thenAnswer((_) async => http.Response('Not found', 404));
-
-        //act
-        final result = weatherRemoteDataSourceImpl.getCurrentWeather(testCityName);
-
-        //assert
-        expect(result, throwsA(isA<ServerException>()));
-      },
-    );
+      expect(result.cityName, isNotNull);
+      expect(result.main, isNotNull);
+      expect(result.description, isNotNull);
+      expect(result.iconCode, isNotNull);
+      expect(result.temperature, isNotNull);
+      expect(result.pressure, isNotNull);
+      expect(result.humidity, isNotNull);
+    } catch (e) {
+      fail('Test failed with exception: $e');
+    }
   });
+
+  test(
+    'should throw a server exception when the response code is 404 or other',
+    () async {
+      //arrange
+      when(
+        mockHttpClient.get(request),
+      ).thenAnswer((_) async => http.Response('Not found', 404));
+
+      //act
+      final result = weatherRemoteDataSourceImpl.getCurrentWeather(testCityName);
+
+      //assert
+      expect(result, throwsA(isA<ServerException>()));
+    },
+  );
 }
